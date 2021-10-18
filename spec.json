@@ -1,0 +1,10 @@
+{
+  "name":"testbuildpack",
+  "detect":[{
+    "filename": "check.test"
+  
+  }],
+  "build":[
+  
+  ]
+}
