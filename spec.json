@@ -1,10 +1,24 @@
 {
   "name":"testbuildpack",
-  "detect":[{
-    "filename": "check.test"
-  
+  "environment":[{
+    "key": "SOMEENV",
+    "default": "SOMEDEFVAL"
   }],
-  "build":[
-  
-  ]
+  "detect": {
+    "exists": [{
+      "path": "check.test"
+    }],
+    "scripts": [{
+      "command": "echo test2"
+    }]
+  },
+  "build":[{
+    "remote": [{
+      "url": "https://sh.rustup.rs",
+      "path": "rustup.rs"
+    }],
+    "scripts": [{
+      "command": "touch samplefile.test"
+    }]
+  }]
 }

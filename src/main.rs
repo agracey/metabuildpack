@@ -1,6 +1,7 @@
 mod build;
 mod detect;
 mod buildspec;
+mod scriptrun;
 
 use std::fs;
 use clap::{Arg, App};
@@ -28,7 +29,10 @@ fn main() {
 
     match stage {
         "detect" => {
-            detect::detect(spec);
+            if detect::detect(spec.detect) {
+                    println!("Buildpack Detected, will run");
+            }
+
         },
         _ => {
             build::build(spec);
