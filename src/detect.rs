@@ -1,5 +1,6 @@
 use crate::buildspec::Detect;
 use crate::scriptrun::run_script;
+use crate::context::Context;
  
 use std::path::Path;
 
@@ -9,7 +10,10 @@ fn check_file(filename: String) -> bool {
 }
 
 
-pub fn detect(spec: Detect) -> bool {
+
+//TODO Context passing in environment and paths
+
+pub fn detect(spec: Detect, ctx: Context) -> bool {
 
 
     if let Some(exists) = spec.exists {

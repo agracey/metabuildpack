@@ -37,7 +37,7 @@ pub struct Remote {
 
 
 #[derive(Serialize,Deserialize)]
-pub struct Included {
+pub struct Local {
   pub from: String,
   pub to: String
 }
@@ -46,7 +46,7 @@ pub struct Included {
 
 #[derive(Serialize,Deserialize)]
 pub struct BuildStep {
-    pub included: Option<Vec<Included>>,
+    pub local: Option<Vec<Local>>,
     pub remote: Option<Vec<Remote>>,
     pub scripts: Option<Vec<Script>>
 }

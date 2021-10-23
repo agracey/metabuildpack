@@ -15,7 +15,11 @@
   "build":[{
     "remote": [{
       "url": "https://sh.rustup.rs",
-      "path": "rustup.rs"
+      "path": "rustup.sh"
+    }],
+    "local": [{
+      "from":"wholedir",
+      "to": "test2.tmpdir"
     }],
     "scripts": [{
       "command": "touch samplefile.test"
