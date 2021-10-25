@@ -1,15 +1,21 @@
 # Buildpacks to include in builder
 [[buildpacks]]
-uri = "docker://atgracey/testbuilder:latest"
+uri = "docker://atgracey/teststatic:0.0.1"
+version = "0.0.1"
+
+
+[[buildpacks]]
+  uri = "docker://gcr.io/paketo-buildpacks/procfile:4.4.1"
+  version = "4.4.1"
 
 # Order used for detection
 [[order]]
 [[order.group]]
-id = "atgracey/testbp1"
+id = "atgracey/teststatic"
 version = "0.0.1"
 
 # Stack that will be used by the builder
 [stack]
 id = "io.buildpacks.agracey.stacks.opensuse-15-3"
 run-image = "docker.io/atgracey/testbprun:latest"
-build-image = "docker.io/atgracey/testbprun:latest"
+build-image = "docker.io/atgracey/testbpbuild:latest"

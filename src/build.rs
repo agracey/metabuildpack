@@ -35,7 +35,6 @@ fn curl_to(url: String, path: PathBuf) {
   }).unwrap();
 
   handle.perform().unwrap();
-
 }
 
 fn move_to(from: PathBuf, to: PathBuf) {
