@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+set -x
+
+env_dir="$1/env"
+plan_path="$2"
+
+ls -la /cnb/
+
+env
+pwd
+ls -la .
+ls -la $1
+ls -la $1/env
+ls -la $2
+
+
+echo $CNB_BUILDPACK_DIR
+
+$CNB_BUILDPACK_DIR/bin/metabuildpack --phase detect -b $CNB_BUILDPACK_DIR -f $CNB_BUILDPACK_DIR/test.json -e $env_dir -p $plan_path
+exit $?

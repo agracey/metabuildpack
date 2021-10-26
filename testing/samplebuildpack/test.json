@@ -1,0 +1,22 @@
+{
+  "name":"testbuildpack",
+  "environment":[{
+    "key": "SOMEENV",
+    "default": "SOMEDEFVAL"
+  }],
+  "detect": {
+    "exists": [{
+      "path": "somefile.txt"
+    }]
+  },
+  "build":[{
+    "remote": [{
+      "url": "https://sh.rustup.rs",
+      "path": "rustup.sh"
+    }],
+    "local": [],
+    "scripts": [{
+      "command": "zypper -n in nginx"
+    }]
+  }]
+}

@@ -1,0 +1,15 @@
+FROM registry.opensuse.org/opensuse/leap:15.3
+
+ARG cnb_uid=1000
+ARG cnb_gid=1001
+
+# Install packages that we want to make available at both build and run time
+RUN zypper -n in ca-certificates
+
+# Create user and group
+RUN groupadd -g ${cnb_gid} cnb && \
+  useradd -u ${cnb_uid} -G cnb -s /bin/bash cnb
+
+# Set required CNB information
+ENV CNB_USER_ID=${cnb_uid}
+ENV CNB_GROUP_ID=${cnb_gid}

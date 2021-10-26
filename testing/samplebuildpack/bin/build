@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+layers_dir="$1"
+env_dir="$2/env"
+plan_path="$3"
+
+echo $1
+ls $1
+echo $2
+ls $2
+echo $3
+ls $3
+
+$CNB_BUILDPACK_DIR/bin/metabuildpack --phase build -b $CNB_BUILDPACK_DIR -f $CNB_BUILDPACK_DIR/test.json -e $env_dir -p $plan_path -l $layers_dir
+exit $?

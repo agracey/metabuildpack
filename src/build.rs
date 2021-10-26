@@ -25,12 +25,10 @@ fn curl_to(url: String, path: PathBuf) {
   handle.url(&url).unwrap();
 
   handle.write_function(move |data| {
-
     if filehandle.write_all(data).is_ok(){
       return Ok(data.len())
-
     } else {
-      return Err()
+      return Ok(0)
     }
   }).unwrap();
 

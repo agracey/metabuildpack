@@ -16,17 +16,19 @@ fn main() {
         .author("agracey")
         .about("Build Applications Easily")
         .arg(Arg::with_name("phase")
-             .long("phase").takes_value(true).help("detect|build"))
+            .long("phase").takes_value(true).help("detect|build"))
+        .arg(Arg::with_name("buildpackdir")
+            .short("b").long("buildpackdir").takes_value(true).help("buildpackdir").default_value("./"))
         .arg(Arg::with_name("specfile")
-             .short("f").long("filename").takes_value(true).help("buildspec").default_value("./"))
+            .short("f").long("filename").takes_value(true).help("buildspec").default_value("./"))
         .arg(Arg::with_name("envdir")
-             .short("e").long("envdir").takes_value(true).help("envdir").default_value("./"))
+            .short("e").long("envdir").takes_value(true).help("envdir").default_value("./"))
         .arg(Arg::with_name("plan")
-             .short("p").long("plan").takes_value(true).help("plan").default_value("./"))
+            .short("p").long("plan").takes_value(true).help("plan").default_value("./"))
         .arg(Arg::with_name("stagedir")
             .short("s").long("stagedir").takes_value(true).help("stagedir").default_value("./"))
         .arg(Arg::with_name("layers")
-             .short("l").long("layers").takes_value(true).help("layers").default_value("./"))
+            .short("l").long("layers").takes_value(true).help("layers").default_value("./"))
         .get_matches();
 
 
@@ -58,7 +60,10 @@ fn main() {
     match stage {
         "detect" => {
             if detect::detect(spec.detect, ctx) {
-                    println!("Buildpack Detected, will run");
+                println!("Buildpack Detected, will run");
+                std::process::exit(0);
+            } else {
+                std::process::exit(1);
             }
 
         },
