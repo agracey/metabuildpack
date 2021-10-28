@@ -16,6 +16,7 @@ fn check_file(filename: String) -> bool {
 pub fn detect(spec: Detect, ctx: Context) -> bool {
 
 
+
     if let Some(exists) = spec.exists {
       for exist in exists {
         if !check_file(exist.path) {
@@ -28,7 +29,7 @@ pub fn detect(spec: Detect, ctx: Context) -> bool {
     if let  Some(scripts) = spec.scripts {
       println!("Running Scripts");
       for script in scripts {
-        println!("Running: {}", script.command);
+        println!("Running: {} {}", script.command, ctx.build_id);
         let (success, _, _) = run_script("./".to_string(), script.command);
 
         if success {

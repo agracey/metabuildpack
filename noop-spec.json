@@ -1,0 +1,22 @@
+{
+  "name":"noop-buildpack",
+  "config":{
+    "cache": true,
+    "runtime": true
+  },
+  "environment":[{
+    "key": "SOMEENV",
+    "default": "SOMEDEFVAL"
+  }],
+  "detect": {
+    "exists": [{
+      "path": "fail.test"
+    }],
+    "scripts": []
+  },
+  "build":[{
+    "remote": [],
+    "local": [],
+    "scripts": []
+  }]
+}
