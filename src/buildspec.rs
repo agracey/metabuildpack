@@ -1,60 +1,71 @@
 use serde::{Deserialize,Serialize};
 
 
-#[derive(Serialize,Deserialize)]
+#[derive(Serialize,Deserialize,Clone)]
 pub struct Exists {
     pub path: String
 }
 
-#[derive(Serialize,Deserialize)]
+#[derive(Serialize,Deserialize,Clone)]
 pub struct Contents {
     pub file: String,
     pub regex: String
 }
 
-#[derive(Serialize,Deserialize)]
+#[derive(Serialize,Deserialize,Clone)]
 pub struct Script {
     pub command: String,
     pub allow_fail: Option<bool>
 }
 
 
-#[derive(Serialize,Deserialize)]
+#[derive(Serialize,Deserialize,Clone)]
 pub struct Detect {
     pub exists: Option<Vec<Exists>>,
     pub scripts: Option<Vec<Script>>
 }
 
-
-
-
-
-#[derive(Serialize,Deserialize)]
+#[derive(Serialize,Deserialize,Clone)]
 pub struct Remote {
     pub url: String,
-    pub path: String
+    pub to: String,
+    pub to_dir: String
 }
 
 
-#[derive(Serialize,Deserialize)]
+#[derive(Serialize,Deserialize,Clone)]
 pub struct Local {
   pub from: String,
-  pub to: String
+  pub to: String,
+  pub to_dir: String
 }
 
 
 
-#[derive(Serialize,Deserialize)]
+#[derive(Serialize,Deserialize,Clone)]
 pub struct BuildStep {
     pub local: Option<Vec<Local>>,
     pub remote: Option<Vec<Remote>>,
     pub scripts: Option<Vec<Script>>
 }
 
+#[derive(Serialize,Deserialize,Clone)]
+pub struct Config {
+    pub cache: bool,
+    pub runtime: bool
+}
 
-#[derive(Serialize,Deserialize)]
+#[derive(Serialize,Deserialize,Clone)]
+pub struct Env {
+    pub key: String,
+    pub default: String
+}
+
+#[derive(Serialize,Deserialize,Clone)]
 pub struct Buildspec {
   pub name: String,
+  pub config: Config,
+  pub environment: Vec<Env>,
   pub detect: Detect,
   pub build: Vec<BuildStep>
 }

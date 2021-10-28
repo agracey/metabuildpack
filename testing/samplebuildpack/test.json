@@ -1,5 +1,10 @@
 {
   "name":"testbuildpack",
+
+  "config":{
+    "cache": true,
+    "runtime": true
+  },
   "environment":[{
     "key": "SOMEENV",
     "default": "SOMEDEFVAL"
@@ -9,14 +14,18 @@
       "path": "somefile.txt"
     }]
   },
+
+
+
   "build":[{
     "remote": [{
       "url": "https://sh.rustup.rs",
-      "path": "rustup.sh"
+      "to": "rustup.sh",
+      "to_dir": "layer"
     }],
     "local": [],
     "scripts": [{
-      "command": "zypper -n in nginx"
+      "command": "touch somefile"
     }]
   }]
 }

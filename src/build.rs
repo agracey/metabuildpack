@@ -1,4 +1,6 @@
 use crate::buildspec::BuildStep;
+use crate::buildspec::Remote;
+use crate::buildspec::Local;
 use crate::context::Context;
 use crate::scriptrun::run_script;
 use std::path::PathBuf;
@@ -71,14 +73,42 @@ fn runscript(command: String)->bool {
   return true
 }
 
-pub fn build(steps: Vec<BuildStep>, ctx: Context) {
+
+
+
+fn compile_remote_to_path(to:String, to_dir:String, ctx: &Context)->PathBuf {
+  match to_dir.as_str() {
+    "layer"=>{
+      let mut ret = ctx.layers_dir.clone();
+      ret.push(to);
+      return ret;
+    },
+    "staging"=>{
+      let mut ret = ctx.layers_dir.clone();
+      ret.push(to);
+      return ret;
+    },
+    "buildpack"=>{
+      let mut ret = ctx.layers_dir.clone();
+      ret.push(to);
+      return ret;
+    },
+    _=>{
+      return PathBuf::from(to);
+    }
+  }
+}
+
+
+// Should move to Result<>...
+pub fn build(steps: Vec<BuildStep>, ctx: Context) ->bool {
 
 
   for step in steps {
     if let Some(remote) = step.remote {
       for remotefile in remote {
         
-        curl_to(remotefile.url, ctx.layers_dir.join(remotefile.path));
+        curl_to(remotefile.url, compile_remote_to_path(remotefile.to, remotefile.to_dir, &ctx));
       }
     }
 
@@ -86,17 +116,18 @@ pub fn build(steps: Vec<BuildStep>, ctx: Context) {
       for localfile in local {
         let mut from = ctx.buildpack_dir.clone();
         from.push(localfile.from);
-        let mut to = ctx.layers_dir.clone();
-        to.push(localfile.to);
 
-        move_to(from, to);
+        move_to(from, compile_remote_to_path(localfile.to, localfile.to_dir, &ctx));
       }
     }
 
     if let Some(scripts) = step.scripts {
       for script in scripts {
-        runscript(script.command);
+        if ! runscript(script.command) {
+          return false
+        }
       }
     }
   }
+  return true
 }

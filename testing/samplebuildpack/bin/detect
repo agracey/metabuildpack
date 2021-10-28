@@ -20,4 +20,4 @@ ls -la $2
 echo $CNB_BUILDPACK_DIR
 
 $CNB_BUILDPACK_DIR/bin/metabuildpack --phase detect -b $CNB_BUILDPACK_DIR -f $CNB_BUILDPACK_DIR/test.json -e $env_dir -p $plan_path
-exit $?
+exit 1
