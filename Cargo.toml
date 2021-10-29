@@ -14,4 +14,4 @@ fs_extra = "1.2.0"
 curl = "0.4.39"
 
 opentelemetry = { version= "*", features = ["serialize", "async-std"] }
-opentelemetry-jaeger = { version= "*", features = ["collector_client"] }
+opentelemetry-jaeger = { version= "*", features = ["isahc_collector_client", "collector_client"] }
