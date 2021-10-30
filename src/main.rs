@@ -192,7 +192,7 @@ fn main(){
                 println!("Buildpack Detected, will run");
                 std::process::exit(0);
             } else {
-                exit_val=1;
+                exit_val=100;
             }
         },
         _ => {
