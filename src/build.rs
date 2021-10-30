@@ -60,9 +60,9 @@ fn move_to(from: PathBuf, to: PathBuf) {
   }
 }
 
-fn runscript(command: String)->bool {
+fn runscript(command: String, ctx: &Context)->bool {
   println!("Running {:?}", command);
-  let (success, _, _) = run_script("./".to_string(), command);
+  let (success, _, _) = run_script("./".to_string(), command, ctx);
 
   if success {
     println!("Ran successfully");
@@ -123,7 +123,7 @@ pub fn build(steps: Vec<BuildStep>, ctx: Context) ->bool {
 
     if let Some(scripts) = step.scripts {
       for script in scripts {
-        if ! runscript(script.command) {
+        if ! runscript(script.command, &ctx) {
           return false
         }
       }

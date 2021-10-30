@@ -30,7 +30,7 @@ pub fn detect(spec: Detect, ctx: Context) -> bool {
       println!("Running Scripts");
       for script in scripts {
         println!("Running: {} {}", script.command, ctx.build_id);
-        let (success, _, _) = run_script("./".to_string(), script.command);
+        let (success, _, _) = run_script("./".to_string(), script.command, &ctx);
 
         if success {
           println!("Ran successfully");
