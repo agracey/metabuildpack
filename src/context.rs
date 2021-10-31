@@ -29,7 +29,7 @@ impl Context {
 
   }
 
-  pub fn renderIntoString(self:&Self, templ: String)->String {
+  pub fn render_into_string(self:&Self, templ: String)->String {
 
     let mut handlebars = Handlebars::new();
     handlebars.render_template_with_context(templ.as_str(), &self.into()).unwrap()

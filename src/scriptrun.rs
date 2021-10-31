@@ -6,7 +6,7 @@ pub(crate) fn run_script(working_dir: String, command: String, ctx: &Context) ->
 
   let mut cmd = Command::new("sh");
 
-  let rendered_command = ctx.renderIntoString(command);
+  let rendered_command = ctx.render_into_string(command);
 
   let cmd_ret = cmd.arg("-c").arg(rendered_command).current_dir(working_dir).envs(ctx.env.clone());
   let status = cmd_ret.status().expect("failed to execute sh -c");
