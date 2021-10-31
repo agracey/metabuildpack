@@ -98,7 +98,7 @@ fn build_context(args: &clap::ArgMatches, spec:buildspec::Buildspec) -> context:
             buildpack_name: spec.name,
 
 
-            environment: env,
+            env: env,
             layers_dir: PathBuf::from(args.value_of("layers").unwrap()),
             env_dir: PathBuf::from(args.value_of("envdir").unwrap()),
             plan_file: PathBuf::from(args.value_of("plan").unwrap()),

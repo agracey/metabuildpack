@@ -1,5 +1,5 @@
 use std::path::PathBuf;
-//use handlebars::Handlebars; 
+use handlebars::Handlebars; 
 
 use std::collections::HashMap;
 use serde::{Deserialize,Serialize};
@@ -11,7 +11,7 @@ pub struct Context {
   pub app_name: String,
   pub buildpack_name: String,
 
-  pub environment: HashMap<String, String>,
+  pub env: HashMap<String, String>,
 
 
   pub layers_dir: PathBuf,
@@ -22,10 +22,17 @@ pub struct Context {
 
 }
 
-// impl Context {
-//   pub fn renderIntoString(&self, String: templ)->String {
-//     let mut handlebars = Handlebars::new();
-//     handlebars.render_template_with_context(templ, self).unwrap()
-//   }
-// }
+impl Context {
+
+  fn into(self:&Self)->handlebars::Context {
+    handlebars::Context::wraps(self).unwrap()
+
+  }
+
+  pub fn renderIntoString(self:&Self, templ: String)->String {
+
+    let mut handlebars = Handlebars::new();
+    handlebars.render_template_with_context(templ.as_str(), &self.into()).unwrap()
+  }
+}
 

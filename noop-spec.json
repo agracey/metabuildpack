@@ -6,7 +6,7 @@
   },
   "environment":[{
     "key": "SOMEENV",
-    "default": "SOMEDEFVAL"
+    "default": "SOMEDEFVAL2"
   }],
   "detect": {
     "exists": [{
@@ -17,6 +17,10 @@
   "build":[{
     "remote": [],
     "local": [],
-    "scripts": []
+    "scripts": [{
+      "command":"echo {{env.SOMEENV}}"
+    },{
+      "command":"echo {{env.key12345}}"
+    }]
   }]
 }

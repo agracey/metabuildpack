@@ -11,7 +11,7 @@ With the MetaBuildpack, you can easily describe what assets and processes are ne
 - [x] Pull from local cache (for offline buildpacks)
 - [x] Run script
 - [ ] Figure out what's in the plan file and how do I use it
-- [ ] Use env in script
+- [x] Use context in script
 - [ ] Persisting env for future buildpacks
 - [ ] Caching
 - [ ] Bill of materials
