@@ -1,9 +1,11 @@
 {
   "name":"noop-buildpack",
-  "config":{
+  "layers":[{
+    "name": "allenabled",
     "cache": true,
-    "runtime": true
-  },
+    "launch": true,
+    "build": true
+  }],
   "environment":[{
     "key": "SOMEENV",
     "default": "SOMEDEFVAL2"

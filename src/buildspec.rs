@@ -49,10 +49,13 @@ pub struct BuildStep {
     pub scripts: Option<Vec<Script>>
 }
 
+//Should these be optional?
 #[derive(Serialize,Deserialize,Clone)]
-pub struct Config {
+pub struct Layer {
+    pub name: String,
     pub cache: bool,
-    pub runtime: bool
+    pub launch: bool,
+    pub build: bool
 }
 
 #[derive(Serialize,Deserialize,Clone)]
@@ -64,7 +67,7 @@ pub struct Env {
 #[derive(Serialize,Deserialize,Clone)]
 pub struct Buildspec {
   pub name: String,
-  pub config: Config,
+  pub layers: Vec<Layer>,
   pub environment: Vec<Env>,
   pub detect: Detect,
   pub build: Vec<BuildStep>

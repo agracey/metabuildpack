@@ -93,8 +93,8 @@ fn build_context(args: &clap::ArgMatches, spec:buildspec::Buildspec) -> context:
     global::tracer("my-component").in_span("build_context", |_cx| {
         let env = build_env(&args, spec.clone());
         context::Context{
-            app_name: "Some App".to_string(),
-            build_id: "Some App".to_string(),
+            app_name: "Some App".to_string(), // Do we know this?
+            build_id: "Some App".to_string(), // Do we know this?
             buildpack_name: spec.name,
 
 
@@ -108,25 +108,40 @@ fn build_context(args: &clap::ArgMatches, spec:buildspec::Buildspec) -> context:
     })
 }
 
-fn write_config(cfg: buildspec::Config, ctx: context::Context){
-    global::tracer("my-component").in_span("write_config", |_cx| {
+// Write config to each layer
+fn setup_layers(layers: Vec<buildspec::Layer>, ctx: context::Context){
+    global::tracer("my-component").in_span("write_layer_config", |_cx| {
 
-        let mut file_contents = String::new();
+        for layer in layers {
 
-        if cfg.cache {
-            file_contents.push_str("cache = true\n")
+            let res = std::fs::create_dir(PathBuf::from(format!("{}/{}", ctx.layers_dir.to_str().unwrap(), layer.name)));
+
+            if res.is_err() {
+                println!("Couldn't create layer: {}", layer.name);
+                return //TODO bubble error
+            }
+
+            let mut file_contents = String::new();
+
+            if layer.cache {
+                file_contents.push_str("cache = true\n")
+            }
+            if layer.launch {
+                file_contents.push_str("launch = true\n")
+            }
+            if layer.build {
+                file_contents.push_str("build = true\n")
+            }
+
+            let  path = PathBuf::from(format!("{}/{}.toml", ctx.layers_dir.to_str().unwrap(), layer.name));
+
+            let mut handle = fs::OpenOptions::new().write(true).create(true).open(path).unwrap();
+
+            if write!(handle, "{}", file_contents).is_ok() {
+                println!("Congig written")
+            }
         }
-        if cfg.runtime {
-            file_contents.push_str("launch = true\n")
-        }
 
-        let  path = PathBuf::from(format!("{}/{}.toml", ctx.layers_dir.to_str().unwrap(), ctx.buildpack_name));
-
-        let mut handle = fs::OpenOptions::new().write(true).create(true).open(path).unwrap();
-
-        if write!(handle, "{}", file_contents).is_ok() {
-            println!("Congig written")
-        }
     })
 }
 
@@ -196,7 +211,7 @@ fn main(){
             }
         },
         _ => {
-            write_config(spec.config, ctx.clone());
+            setup_layers(spec.layers, ctx.clone());
             build::build(spec.build, ctx.clone());
         }
     };
