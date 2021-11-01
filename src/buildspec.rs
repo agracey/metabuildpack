@@ -1,5 +1,5 @@
 use serde::{Deserialize,Serialize};
-
+use std::fs;
 
 #[derive(Serialize,Deserialize,Clone)]
 pub struct Exists {
@@ -73,3 +73,12 @@ pub struct Buildspec {
   pub build: Vec<BuildStep>
 }
 
+
+
+impl Buildspec {
+    pub fn read_specfile(args: &clap::ArgMatches) -> Self{
+        let specfile = args.value_of("specfile").unwrap();
+        let specfile_contents = fs::read_to_string(specfile).expect("Cannot Read File");
+        serde_json::from_str(&specfile_contents).unwrap()
+    }
+}

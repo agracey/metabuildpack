@@ -13,5 +13,5 @@ handlebars = "3"
 fs_extra = "1.2.0"
 curl = "0.4.39"
 
-opentelemetry = { version= "*", features = ["serialize", "async-std"] }
-opentelemetry-jaeger = { version= "*", features = ["isahc_collector_client", "collector_client"] }
+opentelemetry = { version= "*", features = ["serialize", "async-std", "trace"] }
+opentelemetry-jaeger = { version= "*", features = ["isahc", "collector_client", "isahc_collector_client"] }
