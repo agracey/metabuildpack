@@ -70,7 +70,8 @@ pub struct Buildspec {
   pub layers: Vec<Layer>,
   pub environment: Vec<Env>,
   pub detect: Detect,
-  pub build: Vec<BuildStep>
+  pub build: Vec<BuildStep>,
+  pub process: Option<String>
 }
 
 

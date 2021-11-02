@@ -77,10 +77,32 @@ fn setup_layers(layers: Vec<buildspec::Layer>, ctx: context::Context){
             let mut handle = fs::OpenOptions::new().write(true).create(true).open(path).unwrap();
 
             if write!(handle, "{}", file_contents).is_ok() {
-                println!("Congig written")
+                println!("Layer written: {}", layer.name);
             }
         }
 
+    })
+}
+
+
+// Write config to each layer
+fn write_launch(cmd:String, ctx: context::Context){
+    global::tracer("my-component").in_span("write_launch_config", |_cx| {
+
+        let mut file_contents = String::new();
+        file_contents.push_str("[[processes]]\n");
+        file_contents.push_str("type = \"web\"\n");
+        file_contents.push_str("command = \"");
+        file_contents.push_str(ctx.render_into_string(cmd).as_str()); //TODO escaping "\""
+        file_contents.push_str("\"\n");
+
+        let path = PathBuf::from(format!("{}/launch.toml", ctx.layers_dir.to_str().unwrap()));
+
+        let mut handle = fs::OpenOptions::new().write(true).create(true).open(path).unwrap();
+
+        if write!(handle, "{}", file_contents).is_ok() {
+            println!("Launch written")
+        }
     })
 }
 
@@ -104,6 +126,10 @@ fn main(){
         _ => {
             setup_layers(spec.layers, ctx.clone());
             build::build(spec.build, ctx.clone());
+
+            if let Some(proc) = spec.process {
+                write_launch(proc, ctx.clone()); 
+            }
         }
     };
 

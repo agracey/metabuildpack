@@ -15,7 +15,7 @@ With the MetaBuildpack, you can easily describe what assets and processes are ne
 - [ ] Persisting env for future buildpacks
 - [x] Caching
 - [ ] Bill of materials
-- [ ] Launch configuration
+- [x] Launch configuration
 - [ ] Tracing of Pipeline (in progress)
 - [ ] Published builder image and stack with tool included
 
