@@ -60,6 +60,8 @@ fn setup_layers(layers: Vec<buildspec::Layer>, ctx: context::Context){
 
             let mut file_contents = String::new();
 
+            file_contents.push_str("[types]\n");
+
             if layer.cache {
                 file_contents.push_str("cache = true\n")
             }

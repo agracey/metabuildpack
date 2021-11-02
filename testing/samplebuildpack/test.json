@@ -1,28 +1,26 @@
 {
-  "name":"testbuildpack",
+  "name":"nodejs-install",
 
-  "config":{
+  "layers":[{
+    "name":"nodejs",
     "cache": true,
-    "runtime": true
-  },
+    "launch": true,
+    "build": true
+  }],
   "environment":[{
     "key": "SOMEENV",
     "default": "SOMEDEFVAL"
   }],
   "detect": {
     "exists": [{
-      "path": "somefile.txt"
+      "path": "package.json"
     }]
   },
 
 
 
   "build":[{
-    "remote": [{
-      "url": "https://sh.rustup.rs",
-      "to": "rustup.sh",
-      "to_dir": "layer"
-    }],
+    "remote": [],
     "local": [],
     "scripts": [{
       "command": "touch somefile"

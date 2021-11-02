@@ -13,7 +13,7 @@ With the MetaBuildpack, you can easily describe what assets and processes are ne
 - [ ] Figure out what's in the plan file and how do I use it
 - [x] Use context in script
 - [ ] Persisting env for future buildpacks
-- [ ] Caching
+- [x] Caching
 - [ ] Bill of materials
 - [ ] Launch configuration
 - [ ] Tracing of Pipeline (in progress)
