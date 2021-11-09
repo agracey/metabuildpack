@@ -45,8 +45,6 @@ impl Context {
 
     
     let rendered_env = Self::build_rendered_env(&args, spec.clone(), ctx);
-
-
     context::Context{
       app_name: "Some App".to_string(), // Do we know this?
       build_id: "Some App".to_string(), // Do we know this?
@@ -67,6 +65,8 @@ impl Context {
     for (key, val) in std::env::vars() {
         if key.starts_with("BP_") || key.starts_with("BPE_") {
             env.insert(key.replace("BP_", "BPE_").to_string(), val);
+        } else {
+          env.insert(key, val);
         }
     }
 
@@ -91,14 +91,12 @@ impl Context {
   fn build_rendered_env(args: &clap::ArgMatches, spec:buildspec::Buildspec, ctx: Context) -> HashMap<String,String> {
     let mut env = HashMap::new();
 
-    for def in  spec.environment {
-      env.insert(def.key, ctx.render_into_string(def.default));
-    }
-
     // Only listen for environment variables that start with BP or BPE and strip off the prefix
     for (key, val) in std::env::vars() {
         if key.starts_with("BP_") || key.starts_with("BPE_") {
             env.insert(key.replace("BP_", "BPE_").to_string(), val);
+        } else {
+          env.insert(key, val);
         }
     }
 
@@ -115,6 +113,10 @@ impl Context {
         let val = fs::read_to_string(filepath).unwrap();
 
         env.insert(key.to_string(), val);
+    }
+
+    for def in spec.environment {
+      env.insert(def.key, ctx.render_into_string(def.default));
     }
 
     return env;

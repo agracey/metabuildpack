@@ -127,7 +127,9 @@ fn main(){
         },
         _ => {
             setup_layers(spec.layers, ctx.clone());
-            build::build(spec.build, ctx.clone());
+            if ! build::build(spec.build, ctx.clone()) {
+                exit_val=100;
+            }
 
             if let Some(proc) = spec.process {
                 write_launch(proc, ctx.clone()); 
