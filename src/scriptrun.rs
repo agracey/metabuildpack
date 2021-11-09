@@ -4,7 +4,7 @@ use crate::context::Context;
 
 pub(crate) fn run_script(working_dir: String, command: String, ctx: &Context) -> (bool, String, String) {
 
-  let mut cmd = Command::new("sh");
+  let mut cmd = Command::new("/bin/sh");
 
   let rendered_command = ctx.render_into_string(command);
 

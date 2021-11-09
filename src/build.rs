@@ -55,12 +55,13 @@ fn move_to(from: PathBuf, to: PathBuf) {
     println!("Copying File {:?} to {:?}", from.file_name(), to.file_name());
     let copy_res =  file::copy(from, to, &file_copy_options);
     if copy_res.is_err() {
-      println!("File Copy Failed");
+      println!("File Copy Failed, {}", copy_res.err().unwrap());
     }
   }
 }
 
 fn runscript(command: String, ctx: &Context)->bool {
+
   println!("Running {:?}", command);
   let (success, _, _) = run_script("./".to_string(), command, ctx);
 
@@ -75,31 +76,6 @@ fn runscript(command: String, ctx: &Context)->bool {
 
 
 
-
-fn compile_remote_to_path(to:String, to_dir:String, ctx: &Context)->PathBuf {
-  match to_dir.as_str() {
-    "layer"=>{
-      let mut ret = ctx.layers_dir.clone();
-      ret.push(to);
-      return ret;
-    },
-    "staging"=>{
-      let mut ret = ctx.layers_dir.clone();
-      ret.push(to);
-      return ret;
-    },
-    "buildpack"=>{
-      let mut ret = ctx.layers_dir.clone();
-      ret.push(to);
-      return ret;
-    },
-    _=>{
-      return PathBuf::from(to);
-    }
-  }
-}
-
-
 // Should move to Result<>...
 pub fn build(steps: Vec<BuildStep>, ctx: Context) ->bool {
 
@@ -108,7 +84,7 @@ pub fn build(steps: Vec<BuildStep>, ctx: Context) ->bool {
     if let Some(remote) = step.remote {
       for remotefile in remote {
         
-        curl_to(remotefile.url, compile_remote_to_path(remotefile.to, remotefile.to_dir, &ctx));
+        curl_to(remotefile.url, PathBuf::from(ctx.render_into_string(remotefile.to)));
       }
     }
 
@@ -117,7 +93,9 @@ pub fn build(steps: Vec<BuildStep>, ctx: Context) ->bool {
         let mut from = ctx.buildpack_dir.clone();
         from.push(localfile.from);
 
-        move_to(from, compile_remote_to_path(localfile.to, localfile.to_dir, &ctx));
+        let to = ctx.render_into_string(localfile.to);
+
+        move_to(from, PathBuf::from(to));
       }
     }
 

@@ -28,16 +28,14 @@ pub struct Detect {
 #[derive(Serialize,Deserialize,Clone)]
 pub struct Remote {
     pub url: String,
-    pub to: String,
-    pub to_dir: String
+    pub to: String
 }
 
 
 #[derive(Serialize,Deserialize,Clone)]
 pub struct Local {
   pub from: String,
-  pub to: String,
-  pub to_dir: String
+  pub to: String
 }
 
 
@@ -79,6 +77,7 @@ pub struct Buildspec {
 impl Buildspec {
     pub fn read_specfile(args: &clap::ArgMatches) -> Self{
         let specfile = args.value_of("specfile").unwrap();
+        println!("specfile: {}",specfile.clone());
         let specfile_contents = fs::read_to_string(specfile).expect("Cannot Read File");
         serde_json::from_str(&specfile_contents).unwrap()
     }

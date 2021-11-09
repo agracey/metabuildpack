@@ -9,7 +9,7 @@ use clap::{Arg, App}; // StructOpt ?
 use std::path::PathBuf; 
 use std::io::{Write};
 
-use opentelemetry::{global, trace::{Span, Tracer}};
+use opentelemetry::{global, trace::{ Tracer}};
 
 /*
  metabuildpack 
@@ -110,7 +110,9 @@ fn main(){
 
     //Set up comand line args
     let args = read_cli_args();
+
     let spec = buildspec::Buildspec::read_specfile(&args);
+
     let ctx = context::Context::build(&args, spec.clone());
 
     let mut exit_val = 0;
