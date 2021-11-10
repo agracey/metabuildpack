@@ -1,6 +1,9 @@
 use crate::buildspec::Detect;
 use crate::scriptrun::run_script;
 use crate::context::Context;
+
+use anyhow::anyhow;
+use anyhow::{Error, Result};
  
 use std::path::Path;
 
@@ -10,10 +13,7 @@ fn check_file(filename: String) -> bool {
 }
 
 
-
-//TODO Context passing in environment and paths
-
-pub fn detect(spec: Detect, ctx: Context) -> bool {
+pub fn detect(spec: Detect, ctx: Context) -> Result<(), Error> {
 
 
 
@@ -21,7 +21,7 @@ pub fn detect(spec: Detect, ctx: Context) -> bool {
       for exist in exists {
         if !check_file(exist.path) {
           println!("File Not Found, Stopping");
-          return false
+          return Err(anyhow!("File Not Found"));
         }
       };
     }
@@ -35,11 +35,10 @@ pub fn detect(spec: Detect, ctx: Context) -> bool {
         if success {
           println!("Ran successfully");
         } else {
-          println!("Failed");
-          return false
+          return Err(anyhow!("Script Failed"));
         }
       };
     }
 
-    return true
+    Ok(())
 }

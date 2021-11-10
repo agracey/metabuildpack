@@ -5,6 +5,8 @@ use std::collections::HashMap;
 use serde::{Deserialize,Serialize};
 use std::fs;
 
+use anyhow::{Error, Result};
+
 use crate::buildspec;
 use crate::context;
 
@@ -27,9 +29,9 @@ pub struct Context {
 
 impl Context {
 
-  pub fn build(args: &clap::ArgMatches, spec: buildspec::Buildspec) -> Self {
+  pub fn build(args: &clap::ArgMatches, spec: buildspec::Buildspec) -> Result<Self,Error> {
 
-    let initial_env = Self::build_initial_env(&args);
+    let initial_env = Self::build_initial_env(&args)?;
 
     let ctx = context::Context{
         app_name: "Some App".to_string(), // Do we know this?
@@ -44,8 +46,8 @@ impl Context {
     };
 
     
-    let rendered_env = Self::build_rendered_env(&args, spec.clone(), ctx);
-    context::Context{
+    let rendered_env = Self::build_rendered_env(&args, spec.clone(), ctx)?;
+    Ok(context::Context{
       app_name: "Some App".to_string(), // Do we know this?
       build_id: "Some App".to_string(), // Do we know this?
       buildpack_name: spec.name.clone(),
@@ -55,11 +57,11 @@ impl Context {
       plan_file: PathBuf::from(args.value_of("plan").unwrap()),
       staging_dir: PathBuf::from(args.value_of("workingdir").unwrap()),
       buildpack_dir: PathBuf::from(args.value_of("buildpackdir").unwrap())
-    }
+    })
   }
 
   // Fill in from spec -> project.toml -> process.env -> env_dir
-  fn build_initial_env(args: &clap::ArgMatches) -> HashMap<String,String> {
+  fn build_initial_env(args: &clap::ArgMatches) -> Result<HashMap<String,String>, Error> {
     let mut env = HashMap::new();
     // Only listen for environment variables that start with BP or BPE and strip off the prefix
     for (key, val) in std::env::vars() {
@@ -85,10 +87,10 @@ impl Context {
         env.insert(key.to_string(), val);
     }
 
-    return env;
+    Ok(env)
   }
   // Fill in from spec -> project.toml -> process.env -> env_dir
-  fn build_rendered_env(args: &clap::ArgMatches, spec:buildspec::Buildspec, ctx: Context) -> HashMap<String,String> {
+  fn build_rendered_env(args: &clap::ArgMatches, spec:buildspec::Buildspec, ctx: Context) -> Result<HashMap<String,String>, Error> {
     let mut env = HashMap::new();
 
     // Only listen for environment variables that start with BP or BPE and strip off the prefix
@@ -116,22 +118,21 @@ impl Context {
     }
 
     for def in spec.environment {
-      env.insert(def.key, ctx.render_into_string(def.default));
+      env.insert(def.key, ctx.render_into_string(def.default)?);
     }
 
-    return env;
+    Ok(env)
   }
 
-
-  pub fn into(self:&Self)->handlebars::Context {
-    handlebars::Context::wraps(self).unwrap()
-
-  }
-
-  pub fn render_into_string(self:&Self, templ: String)->String {
+  pub fn render_into_string(&self, templ: String) -> Result<String, Error>  {
 
     let handlebars = Handlebars::new();
-    handlebars.render_template_with_context(templ.as_str(), &self.into()).unwrap()
+    Ok(handlebars.render_template_with_context(templ.as_str(), &self.into())?)
   }
 }
 
+impl Into<handlebars::Context> for &Context {
+  fn into(self)->handlebars::Context{
+    handlebars::Context::wraps(self).unwrap()
+  }
+}

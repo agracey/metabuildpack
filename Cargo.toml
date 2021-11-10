@@ -12,6 +12,7 @@ serde = {version= "1.0", features = ["derive"]}
 handlebars = "3"
 fs_extra = "1.2.0"
 curl = "0.4.39"
+anyhow = "1.0.44"
 
 opentelemetry = { version= "*", features = ["serialize", "async-std", "trace"] }
 opentelemetry-jaeger = { version= "*", features = ["isahc", "collector_client", "isahc_collector_client"] }

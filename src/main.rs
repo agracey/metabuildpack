@@ -9,6 +9,8 @@ use clap::{Arg, App}; // StructOpt ?
 use std::path::PathBuf; 
 use std::io::{Write};
 
+use anyhow::{Error, Result};
+
 use opentelemetry::{global, trace::{ Tracer}};
 
 /*
@@ -46,7 +48,7 @@ fn read_cli_args()-> clap::ArgMatches<'static> {
 
 
 // Write config to each layer
-fn setup_layers(layers: Vec<buildspec::Layer>, ctx: context::Context){
+fn setup_layers(layers: Vec<buildspec::Layer>, ctx: context::Context) -> Result<(),Error>{
     global::tracer("my-component").in_span("write_layer_config", |_cx| {
 
         for layer in layers {
@@ -81,19 +83,22 @@ fn setup_layers(layers: Vec<buildspec::Layer>, ctx: context::Context){
             }
         }
 
-    })
+
+    });
+    
+    Ok(())
 }
 
 
 // Write config to each layer
-fn write_launch(cmd:String, ctx: context::Context){
+fn write_launch(cmd:String, ctx: context::Context) -> Result<(),Error>{
     global::tracer("my-component").in_span("write_launch_config", |_cx| {
 
         let mut file_contents = String::new();
         file_contents.push_str("[[processes]]\n");
         file_contents.push_str("type = \"web\"\n");
         file_contents.push_str("command = \"");
-        file_contents.push_str(ctx.render_into_string(cmd).as_str()); //TODO escaping "\""
+        file_contents.push_str(ctx.render_into_string(cmd).unwrap().as_str()); //TODO escaping "\""
         file_contents.push_str("\"\n");
 
         let path = PathBuf::from(format!("{}/launch.toml", ctx.layers_dir.to_str().unwrap()));
@@ -103,36 +108,38 @@ fn write_launch(cmd:String, ctx: context::Context){
         if write!(handle, "{}", file_contents).is_ok() {
             println!("Launch written")
         }
-    })
+    });
+    Ok(())
 }
 
-fn main(){
+fn main() -> Result<(),Error>{
 
     //Set up comand line args
     let args = read_cli_args();
 
     let spec = buildspec::Buildspec::read_specfile(&args);
 
-    let ctx = context::Context::build(&args, spec.clone());
+    let ctx = context::Context::build(&args, spec.clone()).unwrap();
 
     let mut exit_val = 0;
 
     match args.value_of("phase").unwrap_or("unknown") {//TODO error if not passed in
         "detect" => {
-            if detect::detect(spec.detect, ctx) {
+            if detect::detect(spec.detect, ctx).is_ok() {
                 println!("Buildpack Detected, will run");
             } else {
                 exit_val=100;
             }
         },
         _ => {
-            setup_layers(spec.layers, ctx.clone());
-            if ! build::build(spec.build, ctx.clone()) {
+            if let Err(_e) = setup_layers(spec.layers, ctx.clone()) {
                 exit_val=100;
-            }
-
-            if let Some(proc) = spec.process {
-                write_launch(proc, ctx.clone()); 
+            } else if let Err(_e) = build::build(spec.build, ctx.clone()) {
+                exit_val=100;
+            } else if let Some(proc) = spec.process {
+                if let Err(_e) = write_launch(proc, ctx.clone()) {
+                    exit_val=100;
+                }
             }
         }
     };

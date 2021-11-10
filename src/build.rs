@@ -1,9 +1,10 @@
 use crate::buildspec::BuildStep;
-// use crate::buildspec::Remote;
-// use crate::buildspec::Local;
 use crate::context::Context;
 use crate::scriptrun::run_script;
 use std::path::PathBuf;
+
+use anyhow::anyhow;
+use anyhow::{Error, Result};
 
 use curl::easy::Easy;
 
@@ -12,7 +13,7 @@ use fs_extra::dir;
 use std::fs;
 use std::io::Write;
 
-fn curl_to(url: String, path: PathBuf) {
+fn curl_to(url: String, path: PathBuf) -> Result<(), Error> {
   println!("cURLing {:?} to {:?}", url, path.file_name());
 
   let mut filehandle = fs::OpenOptions::new()
@@ -24,7 +25,10 @@ fn curl_to(url: String, path: PathBuf) {
 
 
   let mut handle = Easy::new();
-  handle.url(&url).unwrap();
+
+  if let Err(e) = handle.url(&url) {
+    return Err(anyhow!("Poorly Formatted URL in remote files: {:?}", e.description()))
+  }
 
   handle.write_function(move |data| {
     if filehandle.write_all(data).is_ok(){
@@ -32,12 +36,15 @@ fn curl_to(url: String, path: PathBuf) {
     } else {
       return Ok(0)
     }
-  }).unwrap();
+  })?;
 
-  handle.perform().unwrap();
+  if let Err(e) = handle.perform() {
+    return Err(anyhow!("Failed Curl: {:?}", e.description()))
+  }
+  Ok(())
 }
 
-fn move_to(from: PathBuf, to: PathBuf) {
+fn move_to(from: PathBuf, to: PathBuf) -> Result<(), Error> {
   if from.is_dir(){
     let mut dir_copy_options: fs_extra::dir::CopyOptions = fs_extra::dir::CopyOptions::new();
     dir_copy_options.copy_inside = true;
@@ -45,7 +52,7 @@ fn move_to(from: PathBuf, to: PathBuf) {
     println!("Copying Dir {:?} to {:?}", from.file_name(), to.file_name());
     let copy_res = dir::copy(from,to, &dir_copy_options);
     if copy_res.is_err() {
-      println!("Dir Copy Failed");
+      return Err(anyhow!("Dir Copy Failed -- {}", copy_res.err().unwrap()));
     }
 
 
@@ -55,36 +62,34 @@ fn move_to(from: PathBuf, to: PathBuf) {
     println!("Copying File {:?} to {:?}", from.file_name(), to.file_name());
     let copy_res =  file::copy(from, to, &file_copy_options);
     if copy_res.is_err() {
-      println!("File Copy Failed, {}", copy_res.err().unwrap());
+      return Err(anyhow!("File Copy Failed -- {}", copy_res.err().unwrap()));
     }
   }
+
+  Ok(())
 }
 
-fn runscript(command: String, ctx: &Context)->bool {
+fn runscript(command: String, ctx: &Context) -> Result<(), Error> {
 
-  println!("Running {:?}", command);
-  let (success, _, _) = run_script("./".to_string(), command, ctx);
+  println!("Running {:?}", command.clone());
+  let (success, _, _) = run_script("./".to_string(), command.clone(), ctx);
 
-  if success {
-    println!("Ran successfully");
-  } else {
-    println!("Failed");
-    return false
+  if ! success {
+    return Err(anyhow!("Command Failed: {}", command.clone()))
   }
-  return true
+  Ok(())
 }
 
 
 
-// Should move to Result<>...
-pub fn build(steps: Vec<BuildStep>, ctx: Context) ->bool {
-
+pub fn build(steps: Vec<BuildStep>, ctx: Context) -> Result<(), Error> {
 
   for step in steps {
     if let Some(remote) = step.remote {
       for remotefile in remote {
-        
-        curl_to(remotefile.url, PathBuf::from(ctx.render_into_string(remotefile.to)));
+        if curl_to(remotefile.url.clone(), PathBuf::from(ctx.render_into_string(remotefile.to.clone())?)).is_err() {
+          return Err(anyhow!("Couldn't curl {:?} to {:?}", remotefile.url, remotefile.to ));
+        }
       }
     }
 
@@ -92,20 +97,21 @@ pub fn build(steps: Vec<BuildStep>, ctx: Context) ->bool {
       for localfile in local {
         let mut from = ctx.buildpack_dir.clone();
         from.push(localfile.from);
+        let to = ctx.render_into_string(localfile.to)?;
 
-        let to = ctx.render_into_string(localfile.to);
-
-        move_to(from, PathBuf::from(to));
+        if move_to(from.clone(), PathBuf::from(to.clone())).is_err() {
+          return Err(anyhow!("Couldn't move {:?} to {:?}", from, to ));
+        }
       }
     }
 
     if let Some(scripts) = step.scripts {
       for script in scripts {
-        if ! runscript(script.command, &ctx) {
-          return false
+        if runscript(script.command.clone(), &ctx).is_err() {
+          return Err(anyhow!("Command Failed: {}", script.command.clone()))
         }
       }
     }
   }
-  return true
+  return Ok(());
 }
