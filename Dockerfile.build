@@ -4,6 +4,7 @@ FROM ${base_image}
 # Install packages that we want to make available at build time
 RUN zypper -n in curl wget git tar gzip liblzma5 xz
 
+COPY ./target/release/metabuildpack /usr/local/bin/metabuildpack
 
 # Set required CNB information
 ARG stack_id
