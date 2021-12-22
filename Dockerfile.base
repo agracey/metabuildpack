@@ -4,11 +4,11 @@ ARG cnb_uid=1000
 ARG cnb_gid=1001
 
 # Install packages that we want to make available at both build and run time
-RUN zypper -n in ca-certificates
+RUN zypper -n in ca-certificates openssl
 
 # Create user and group
 RUN groupadd -g ${cnb_gid} cnb && \
-  useradd -u ${cnb_uid} -G cnb -s /bin/bash cnb
+  useradd -u ${cnb_uid} -g cnb -m -s /bin/bash cnb
 
 # Set required CNB information
 ENV CNB_USER_ID=${cnb_uid}
