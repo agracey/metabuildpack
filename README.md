@@ -14,10 +14,14 @@ With the MetaBuildpack, you can easily describe what assets and processes are ne
 - [x] Use context in script
 - [ ] Persisting env for future buildpacks
 - [x] Caching
-- [ ] Bill of materials
+- [ ] Bill of materials (sbom)
 - [x] Launch configuration
 - [ ] Tracing of Pipeline (in progress)
-- [ ] Published builder image and stack with tool included
+- [x] Published builder image and stack with tool included (docker.io/atgracey/metabuildpackbase:latest)
+- [ ] Automated stack builds
+- - [ ] x86_64
+- - [ ] aarch64
+- - [ ] s390x
 
 
 ## How to use
