@@ -16,9 +16,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: get-targets
-      run: rustc --print target-list
-    - name: Build
-      run: cargo build --verbose --release
+    - name: add-s390x-target
+      run: rustup target add s390x-unknown-linux-gnu
+    - name: add-aarch64-target
+      run: rustup target add aarch64-unknown-linux-gnu
+    # - name: Build
+    #   run: cargo build --verbose --release
     - name: Build s390x
       run: cargo build --verbose --release --target=s390x-unknown-linux-gnu
+    - name: Build aarch64
+      run: cargo build --verbose --release --target=aarch64-unknown-linux-gnu
