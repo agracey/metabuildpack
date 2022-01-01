@@ -17,7 +17,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: add-openssl
-      run: sudo apt-get install -y libssl-dev
+      run: sudo apt-get install -y libssl-dev gcc-9-s390x-linux-gnu gcc-9-aarch64-linux-gnu
     - name: add-s390x-target
       run: rustup target add s390x-unknown-linux-gnu
     - name: add-aarch64-target
