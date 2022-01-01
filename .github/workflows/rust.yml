@@ -16,6 +16,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: get-targets
+      run: rustc --print target-list
     - name: Build
       run: cargo build --verbose --release
     - name: Build s390x
