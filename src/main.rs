@@ -5,13 +5,22 @@ mod scriptrun;
 mod context;
 
 use std::fs;
-use clap::{Arg, App}; // StructOpt ?
+use clap::{Arg, App};
+use opentelemetry::trace::Span;
 use std::path::PathBuf; 
 use std::io::{Write};
 
 use anyhow::{Error, Result};
 
-use opentelemetry::{global, trace::{ Tracer}};
+use opentelemetry::{trace::{ Tracer, TraceError}};
+
+use opentelemetry::global::shutdown_tracer_provider;
+use opentelemetry::{
+    trace::{TraceContextExt}, Key,
+};
+use opentelemetry::sdk::Resource;
+use opentelemetry::{global, sdk::trace as sdktrace};
+use opentelemetry_otlp::{WithExportConfig};
 
 /*
  metabuildpack 
@@ -112,37 +121,80 @@ fn write_launch(cmd:String, ctx: context::Context) -> Result<(),Error>{
     Ok(())
 }
 
-fn main() -> Result<(),Error>{
 
-    //Set up comand line args
-    let args = read_cli_args();
+fn init_tracer() -> Result<sdktrace::Tracer, TraceError> {
 
-    let spec = buildspec::Buildspec::read_specfile(&args);
+    let config = sdktrace::config().with_resource(Resource::new(vec![
+        Key::new("service.name").string("metabuildpack")
+    ]));
 
-    let ctx = context::Context::build(&args, spec.clone()).unwrap();
 
-    let mut exit_val = 0;
+    opentelemetry_otlp::new_pipeline()
+        .tracing()
+        .with_exporter(
+            opentelemetry_otlp::new_exporter()
+                .tonic()
+                .with_endpoint("http://collector.linkerd-jaeger:4317"),
+        ).with_trace_config(config)
+        .install_batch(opentelemetry::runtime::Tokio)
+}
 
-    match args.value_of("phase").unwrap_or("unknown") {//TODO error if not passed in
-        "detect" => {
-            if detect::detect(spec.detect, ctx).is_ok() {
-                println!("Buildpack Detected, will run");
-            } else {
-                exit_val=100;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>>{
+    let _ = init_tracer()?;
+    let tracer = global::tracer("metabuildpack/build");
+
+
+    tracer.in_span("buildstep", |cx| {
+        let span = cx.span();
+        //Set up comand line args
+        let args = read_cli_args();
+
+        span.add_event("Build Phase".to_string(), 
+        vec![Key::new("phase").string(args.value_of("phase").unwrap_or("unknown").to_owned())]);
+
+        let spec = buildspec::Buildspec::read_specfile(&args);
+
+        span.add_event("Buildpack Name".to_string(), vec![Key::new("buildpack-name").string(spec.name.to_owned())]);
+
+        let ctx = context::Context::build(&args, spec.clone()).unwrap();
+
+        let mut exit_val = 0;
+
+        match args.value_of("phase").unwrap_or("unknown") {//TODO error if not passed in
+            "detect" => {
+                
+                tracer.in_span("detect", |cx| {
+                    let span = cx.span();
+                    if detect::detect(spec.detect, ctx).is_ok() {
+                        span.add_event("Buildpack Detected, will run".to_string(), vec![]);
+                        println!("Buildpack Detected, will run");
+                    } else {
+                        exit_val=100;
+                    }
+                });
+            },
+            _ => {
+                tracer.in_span("build", |cx| {
+                    let span = cx.span();
+                    if let Err(_e) = setup_layers(spec.layers, ctx.clone()) {
+                        span.add_event("Error Setting up Layers".to_string(), vec![]);
+                        exit_val=100;
+                    } else if let Err(_e) = build::build(spec.build, ctx.clone()) {
+                        span.add_event("Error Building Layer(s)".to_string(), vec![]);
+                        exit_val=100;
+                    } else if let Some(proc) = spec.process {
+                        if let Err(_e) = write_launch(proc, ctx.clone()) {
+                            span.add_event("Error Writing Launch".to_string(), vec![]);
+                            exit_val=100;
+                        }
+                    }
+                });
             }
-        },
-        _ => {
-            if let Err(_e) = setup_layers(spec.layers, ctx.clone()) {
-                exit_val=100;
-            } else if let Err(_e) = build::build(spec.build, ctx.clone()) {
-                exit_val=100;
-            } else if let Some(proc) = spec.process {
-                if let Err(_e) = write_launch(proc, ctx.clone()) {
-                    exit_val=100;
-                }
-            }
-        }
-    };
+        };
 
-    std::process::exit(exit_val);
+        shutdown_tracer_provider();
+        std::process::exit(exit_val);
+    })
 }

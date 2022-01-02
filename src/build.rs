@@ -13,60 +13,81 @@ use fs_extra::dir;
 use std::fs;
 use std::io::Write;
 
+
+use opentelemetry::{global, Key};
+use opentelemetry::trace::{TracerProvider, TraceContextExt};
+use opentelemetry::trace::Tracer;
+
 fn curl_to(url: String, path: PathBuf) -> Result<(), Error> {
-  println!("cURLing {:?} to {:?}", url, path.file_name());
+  let tracer_provider = global::tracer_provider();
+  let tracer = tracer_provider.tracer("metabuildpack/build", None);
+  tracer.in_span("curl to", |cx| {
+    let span = cx.span();
 
-  let mut filehandle = fs::OpenOptions::new()
-  .write(true)
-  .append(true)
-  .create(true)
-  .open(path)
-  .unwrap();
+    span.add_event("file".to_string(), 
+    vec![
+      Key::new("url").string(url.clone())
+    ]);
+
+    println!("cURLing {:?} to {:?}", url, path.file_name());
+
+    let mut filehandle = fs::OpenOptions::new()
+    .write(true)
+    .append(true)
+    .create(true)
+    .open(path)
+    .unwrap();
 
 
-  let mut handle = Easy::new();
+    let mut handle = Easy::new();
 
-  if let Err(e) = handle.url(&url) {
-    return Err(anyhow!("Poorly Formatted URL in remote files: {:?}", e.description()))
-  }
-
-  handle.write_function(move |data| {
-    if filehandle.write_all(data).is_ok(){
-      return Ok(data.len())
-    } else {
-      return Ok(0)
+    if let Err(e) = handle.url(&url) {
+      return Err(anyhow!("Poorly Formatted URL in remote files: {:?}", e.description()))
     }
-  })?;
 
-  if let Err(e) = handle.perform() {
-    return Err(anyhow!("Failed Curl: {:?}", e.description()))
-  }
-  Ok(())
+    handle.write_function(move |data| {
+      if filehandle.write_all(data).is_ok(){
+        return Ok(data.len())
+      } else {
+        return Ok(0)
+      }
+    })?;
+
+    if let Err(e) = handle.perform() {
+      span.add_event("curl failed".to_string(), vec![]);
+      return Err(anyhow!("Failed Curl: {:?}", e.description()))
+    }
+    Ok(())
+  })
 }
 
 fn move_to(from: PathBuf, to: PathBuf) -> Result<(), Error> {
-  if from.is_dir(){
-    let mut dir_copy_options: fs_extra::dir::CopyOptions = fs_extra::dir::CopyOptions::new();
-    dir_copy_options.copy_inside = true;
+  let tracer_provider = global::tracer_provider();
+  let tracer = tracer_provider.tracer("metabuildpack/build", None);
+  tracer.in_span("move to", |cx| {
+    if from.is_dir(){
+      let mut dir_copy_options: fs_extra::dir::CopyOptions = fs_extra::dir::CopyOptions::new();
+      dir_copy_options.copy_inside = true;
 
-    println!("Copying Dir {:?} to {:?}", from.file_name(), to.file_name());
-    let copy_res = dir::copy(from,to, &dir_copy_options);
-    if copy_res.is_err() {
-      return Err(anyhow!("Dir Copy Failed -- {}", copy_res.err().unwrap()));
+      println!("Copying Dir {:?} to {:?}", from.file_name(), to.file_name());
+      let copy_res = dir::copy(from,to, &dir_copy_options);
+      if copy_res.is_err() {
+        return Err(anyhow!("Dir Copy Failed -- {}", copy_res.err().unwrap()));
+      }
+
+
+    } else {
+      let file_copy_options: fs_extra::file::CopyOptions = fs_extra::file::CopyOptions::new();
+
+      println!("Copying File {:?} to {:?}", from.file_name(), to.file_name());
+      let copy_res =  file::copy(from, to, &file_copy_options);
+      if copy_res.is_err() {
+        return Err(anyhow!("File Copy Failed -- {}", copy_res.err().unwrap()));
+      }
     }
 
-
-  } else {
-    let file_copy_options: fs_extra::file::CopyOptions = fs_extra::file::CopyOptions::new();
-
-    println!("Copying File {:?} to {:?}", from.file_name(), to.file_name());
-    let copy_res =  file::copy(from, to, &file_copy_options);
-    if copy_res.is_err() {
-      return Err(anyhow!("File Copy Failed -- {}", copy_res.err().unwrap()));
-    }
-  }
-
-  Ok(())
+    Ok(())
+  })
 }
 
 fn runscript(command: String, ctx: &Context) -> Result<(), Error> {

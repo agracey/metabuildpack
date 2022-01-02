@@ -6,10 +6,6 @@ label=":latest"
 cargo build --release
 
 
-docker build ./ -f Dockerfile.base -t $registry_ns/metabuildpackbase$label
-docker build ./ -f Dockerfile.build -t $registry_ns/metabuildpackbuild$label --build-arg base_image=docker.io/atgracey/metabuildpackbase$label --build-arg stack_id=atgracey.stack.test
-docker build ./ -f Dockerfile.run -t $registry_ns/metabuildpackrun$label --build-arg base_image=docker.io/atgracey/metabuildpackbase$label --build-arg stack_id=atgracey.stack.test
+docker build ./ -f Dockerfile.build -t $registry_ns/metabuildpackbuild$label --build-arg base_image=registry.opensuse.org/home/atgracey/opensuse_leap_15.3/cnbp_base:latest --build-arg stack_id=opensuse.stack.leap15.3
 
-docker push $registry_ns/metabuildpackbase$label
 docker push $registry_ns/metabuildpackbuild$label
-docker push $registry_ns/metabuildpackrun$label
