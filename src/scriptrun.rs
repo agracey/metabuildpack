@@ -2,12 +2,11 @@ use std::process::Command;
 use std::str::from_utf8;
 use crate::context::Context;
 use opentelemetry::{global, Key};
-use opentelemetry::trace::{TracerProvider, TraceContextExt};
+use opentelemetry::trace::{TraceContextExt};
 use opentelemetry::trace::Tracer;
 
 pub(crate) fn run_script(working_dir: String, command: String, ctx: &Context) -> (bool, String, String) {
-  let tracer_provider = global::tracer_provider();
-  let tracer = tracer_provider.tracer("metabuildpack/build", None);
+  let tracer = global::tracer("");
   tracer.in_span("run script", |cx| {
     let span = cx.span();
 
