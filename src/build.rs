@@ -66,6 +66,12 @@ fn move_to(from: PathBuf, to: PathBuf) -> Result<(), Error> {
   let tracer = tracer_provider.tracer("metabuildpack/build", None);
   tracer.in_span("move to", |cx| {
     if from.is_dir(){
+      cx.span().add_event("copy".to_string(), 
+      vec![
+        Key::new("directory").string(from.clone().into_os_string().into_string().unwrap()),
+        Key::new("to").string(to.clone().into_os_string().into_string().unwrap())
+      ]);
+
       let mut dir_copy_options: fs_extra::dir::CopyOptions = fs_extra::dir::CopyOptions::new();
       dir_copy_options.copy_inside = true;
 
@@ -77,6 +83,12 @@ fn move_to(from: PathBuf, to: PathBuf) -> Result<(), Error> {
 
 
     } else {
+      cx.span().add_event("copy".to_string(), 
+      vec![
+        Key::new("from").string(from.clone().into_os_string().into_string().unwrap()),
+        Key::new("to").string(to.clone().into_os_string().into_string().unwrap())
+      ]);
+
       let file_copy_options: fs_extra::file::CopyOptions = fs_extra::file::CopyOptions::new();
 
       println!("Copying File {:?} to {:?}", from.file_name(), to.file_name());
