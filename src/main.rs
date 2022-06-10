@@ -201,7 +201,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>
     let parent_cx = global::get_text_map_propagator(|propagator| {
         propagator.extract(&EnvVarExtractor(env.clone()))
     });
-    let mut span = tracer.start_with_context("buildstep", parent_cx);
+    let mut span = tracer.start_with_context("buildstep", &parent_cx);
 
 
     //Set up comand line args

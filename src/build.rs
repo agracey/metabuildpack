@@ -20,7 +20,7 @@ use opentelemetry::trace::Tracer;
 
 fn curl_to(url: String, path: PathBuf) -> Result<(), Error> {
   let tracer_provider = global::tracer_provider();
-  let tracer = tracer_provider.tracer("metabuildpack/build", None);
+  let tracer = tracer_provider.tracer("metabuildpack/build");
   tracer.in_span("curl to", |cx| {
     let span = cx.span();
 
@@ -63,7 +63,7 @@ fn curl_to(url: String, path: PathBuf) -> Result<(), Error> {
 
 fn move_to(from: PathBuf, to: PathBuf) -> Result<(), Error> {
   let tracer_provider = global::tracer_provider();
-  let tracer = tracer_provider.tracer("metabuildpack/build", None);
+  let tracer = tracer_provider.tracer("metabuildpack/build");
   tracer.in_span("move to", |cx| {
     if from.is_dir(){
       cx.span().add_event("copy".to_string(), 
