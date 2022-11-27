@@ -1,6 +1,6 @@
 # Build your own Cloud Native Build Pack
 
-With the MetaBuildpack, you can easily describe what assets and processes are needed to build software across a large number of types of applications. This gives easier governance and maintainability because the surface for mistakes is smaller!
+With the Meta Buildpack, you can easily describe what assets and processes are needed to build software across a large number of types of applications. This gives easier governance and maintainability because the surface for mistakes is smaller!
 
 ## Features
 
@@ -19,9 +19,10 @@ With the MetaBuildpack, you can easily describe what assets and processes are ne
 - [-] Tracing of Pipeline (in progress)
 - [x] Published builder image and stack with tool included (docker.io/atgracey/metabuildpackbase:latest)
 - [ ] Automated stack builds
-- - [ ] x86_64
-- - [ ] aarch64
+- - [x] x86_64
+- - [x] aarch64
 - - [ ] s390x
+- - [ ] RISC-V
 
 
 ## How to use
@@ -30,12 +31,10 @@ I'm building a stack that anyone can use:
 
 ```
 [stack]
-id = "opensuse.stack.leap15.3"
-run-image = "registry.opensuse.org/home/atgracey/opensuse_leap_15.3/cnbp_run:latest"
-build-image = "docker.io/atgracey/metabuildpackbuild:latest" 
+id = "sle.stack.15.4"
+run-image = "registry.opensuse.org/home/atgracey/cnbp/containers/cnbp_run:latest"
+build-image = "registry.opensuse.org/home/atgracey/cnbp/containers/cnbp_build:latest" 
 ``` 
-Note: I'll be moving the build image to registry.opensuse.org as soon as I get the rust code built there as well.
-
 
 You can use this inside your detect and build bash scripts with: 
 
@@ -105,4 +104,4 @@ Note: I'm adding comments that will break copy and paste!
 
 
 
-A reference set of buildpacks can be found at: https://github.com/agracey/buildpack_example
+A reference set of buildpacks can be found at: https://github.com/agracey/buildpack_example 
